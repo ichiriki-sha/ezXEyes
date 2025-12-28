@@ -1,0 +1,7 @@
+# PowerShell 実行関連
+*.ps1xml
+*.psc1
+*.psd1
+*.psm1
+*.log
+*.tmp
