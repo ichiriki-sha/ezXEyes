@@ -36,7 +36,7 @@
 1. GitHub からリポジトリをクローン
 
 ```powershell
-git clone https://github.com/ichiriki/ezXEyes.git
+git clone https://github.com/ichiriki-sha/ezXEyes.git
 cd ezXEyes
 ```
 
