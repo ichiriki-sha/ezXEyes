@@ -54,8 +54,6 @@ $script:ScriptName = [System.IO.Path]::GetFileName($MyInvocation.MyCommand.Path)
 $script:ScriptBaseName = [System.IO.Path]::GetFileNameWithoutExtension($script:ScriptName)
 $appDataDir = Join-Path -Path $env:APPDATA -ChildPath $script:ScriptBaseName
 
-Write-Host "appDataDir:$appDataDir"
-
 # ディレクトリがなければ作成
 if (-not (Test-Path $appDataDir)) {
     New-Item -ItemType Directory -Path $appDataDir | Out-Null
