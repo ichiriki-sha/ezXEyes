@@ -39,10 +39,10 @@ Add-Type -AssemblyName System.Drawing
 $scriptName = [System.IO.Path]::GetFileName($Myinvocation.MyCommand.Path)
 $createdNew = $false
 $mutexName = "Local\${scriptName}_single_instance_mutex"
-$global:mutex = New-Object System.Threading.Mutex($false, $mutexName, [ref]$createdNew)
+$global:mutex = New-Object System.Threading.Mutex($true, $mutexName)
 
-if (-not $createdNew) {
-    # 既に同名のスクリプトが起動中なら終了
+if (-not $global:mutex.WaitOne(0, $false)) {
+
     exit
 }
 
@@ -52,7 +52,9 @@ if (-not $createdNew) {
 # アプリケーション用データ保存ディレクトリ
 $script:ScriptName = [System.IO.Path]::GetFileName($MyInvocation.MyCommand.Path)
 $script:ScriptBaseName = [System.IO.Path]::GetFileNameWithoutExtension($script:ScriptName)
-appDataDir = Join-Path -Path $env:APPDATA -ChildPath $script:ScriptBaseName
+$appDataDir = Join-Path -Path $env:APPDATA -ChildPath $script:ScriptBaseName
+
+Write-Host "appDataDir:$appDataDir"
 
 # ディレクトリがなければ作成
 if (-not (Test-Path $appDataDir)) {
@@ -173,15 +175,15 @@ function Create-TrayIcon {
     $exitItem.Add_Click({
         $trayIcon.Visible = $false
         $trayIcon.Dispose()
-        $window.Close()
+        $Window.Close()
     })
     $trayIcon.ContextMenuStrip = $contextMenu
 
     $trayIcon.Add_DoubleClick({
-        if ($window.WindowState -eq 'Minimized') { $window.WindowState = 'Normal' }
-        $window.Topmost = $true
-        $window.Activate()
-        $window.Topmost = $false
+        if ($Window.WindowState -eq 'Minimized') { $Window.WindowState = 'Normal' }
+        $Window.Topmost = $true
+        $Window.Activate()
+        $Window.Topmost = $false
     })
 
     # GDI リソース破棄
@@ -363,6 +365,15 @@ $script:Window.Add_Closed({
         ([Math]::Round($script:Window.Top)) `
         ([Math]::Round($script:Window.Width)) `
         ([Math]::Round($script:Window.Height))
+
+    #  Mutex 解放
+    if ($global:mutex) {
+        try {
+            $global:mutex.ReleaseMutex()
+        } catch {}
+        $global:mutex.Dispose()
+        $global:mutex = $null
+    }
 })
 
 # -----------------------------
